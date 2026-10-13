@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Melden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one centered column, a single large round hand-button as the whole page's job. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --ink:#16202a; --muted:#5a6876; --line:#d3dbe3;
+  --accent:#1c5aa3; --accent-ink:#ffffff; --mark:#e1ebf7; --good:#2f7d4f; --good-bg:#e3f2e8; --turn:#c25a12; --turn-bg:#fdeee2; --danger:#b42323;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0e1318; --surface:#171f28; --ink:#e5ebf1; --muted:#95a3b1; --line:#2a3542;
+  --accent:#6ea8ec; --accent-ink:#081422; --mark:#1b2a3c; --good:#6cc18e; --good-bg:#16291f; --turn:#f0a463; --turn-bg:#33210f; --danger:#f07a7a; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:18px;line-height:1.45;-webkit-tap-highlight-color:transparent;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+main{max-width:520px;min-height:100%;margin:0 auto;padding-inline:20px;padding-block:20px 32px;display:flex;flex-direction:column;gap:20px}
+h1,h2{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:30px} h2{font-size:24px}
+p{margin:0}
+.muted{color:var(--muted)}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
+.mono{font-family:var(--f-mono);letter-spacing:.06em}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.top .grow{flex:1;min-width:0}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--muted);display:inline-block;flex:none}
+.dot.up{background:var(--good)} .dot.down{background:var(--danger)}
+button{font:inherit;font-weight:700;min-height:50px;padding:0 18px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.ghost{background:none;border-color:transparent;color:var(--accent);min-height:40px;padding:0 8px;font-size:15px}
+button:disabled{opacity:.5}
+.hand:disabled{opacity:1}
+button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+form{display:flex;flex-direction:column;gap:14px}
+label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:15px}
+input{font:inherit;font-family:var(--f-mono);font-size:26px;letter-spacing:.2em;text-transform:uppercase;text-align:center;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:10px;min-height:58px;width:100%}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center;min-height:380px}
+.hand{width:min(72vw,300px);aspect-ratio:1;max-width:100%;border-radius:50%;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font-family:var(--f-display);font-size:30px;padding:0;transition:transform .12s, background .2s}
+.hand svg{width:38%;height:auto}
+.hand.idle{background:var(--surface);color:var(--muted);border:2px dashed var(--line);cursor:default}
+.hand.open{background:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent);animation:pulse 1.8s infinite}
+.hand.open:active{transform:scale(.96)}
+.hand.sent{background:var(--good-bg);color:var(--good);border:3px solid var(--good)}
+.hand.turn{background:var(--turn);color:#fff}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 45%,transparent)}70%{box-shadow:0 0 0 26px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.msg{font-size:20px;max-width:30ch}
+.count{font-size:15px;color:var(--muted)}
+.err{color:var(--danger);font-size:15px}
+.profiles{display:flex;gap:8px;flex-wrap:wrap}
+.profiles button{min-height:40px;font-size:15px;font-family:var(--f-mono);font-weight:600}
+.profiles button[aria-pressed="true"]{background:var(--mark);border-color:var(--accent)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="grow"><div class="eyebrow">Sonstige Mitarbeit</div><h1>Melden</h1></div>
+    <span id="conn" class="muted" style="font-size:14px;display:flex;align-items:center;gap:6px" hidden><span class="dot" id="dot"></span><span id="connT">verbinde …</span></span>
+  </div>
+
+  <!-- Einrichtung -->
+  <section id="setup" class="card" hidden>
+    <h2>Einmal einrichten</h2>
+    <p class="muted">Du findest beide Codes auf dem Zettel von deiner Lehrkraft. Wenn du den QR-Code auf dem Zettel scannst, geht es automatisch.</p>
+    <form id="setupForm" autocomplete="off">
+      <label for="inRoom">Klassencode (6 Zeichen)<input id="inRoom" maxlength="8" inputmode="text" autocapitalize="characters" spellcheck="false" required></label>
+      <label for="inCode">Dein persönlicher Code (4 Zeichen)<input id="inCode" maxlength="6" inputmode="text" autocapitalize="characters" spellcheck="false" required></label>
+      <p id="setupErr" class="err" hidden></p>
+      <button class="primary" type="submit">Speichern</button>
+      <button class="ghost" type="button" id="setupCancel" hidden>Abbrechen</button>
+    </form>
+    <p class="muted" style="font-size:14px">Dein Code wird nur auf diesem Gerät gespeichert. Gib ihn nicht weiter, sonst kann sich jemand anderes für dich melden.</p>
+  </section>
+
+  <!-- Melden -->
+  <section id="main" hidden style="display:contents">
+    <div class="profiles" id="profiles"></div>
+    <div class="stage">
+      <button id="hand" class="hand idle" type="button" disabled aria-live="polite">
+        <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 34V14a4 4 0 0 1 8 0v16"/><path d="M30 28V10a4 4 0 0 1 8 0v18"/><path d="M38 28V14a4 4 0 0 1 8 0v20"/><path d="M46 26a4 4 0 0 1 8 0v12c0 12-8 20-20 20h-2c-8 0-12-4-16-10l-6-10a4 4 0 0 1 7-4l5 6"/></svg>
+        <span id="handT">Warten</span>
+      </button>
+      <p class="msg" id="msg">Verbinde …</p>
+      <p class="count" id="count"></p>
+      <button id="lower" type="button" hidden>Meldung zurückziehen</button>
+    </div>
+    <div class="top" style="justify-content:space-between">
+      <span class="muted" style="font-size:14px">Klasse <span class="mono" id="whoRoom"></span> · Code <span class="mono" id="whoCode"></span></span>
+      <span><button class="ghost" id="addProfile" type="button">Weitere Klasse</button><button class="ghost" id="removeProfile" type="button">Abmelden</button></span>
+    </div>
+  </section>
+</main>
+
+<script src="somi-core.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const PK = "somi.student.v1";
+let profiles = [], cur = 0, link = null, R = null, myId = null, state = null, wantUp = false, withdrawn = null, sentAt = 0, resendT = null, lastRound = null, wake = null;
+
+function load() { try { const v = JSON.parse(localStorage.getItem(PK) || "{}"); profiles = v.p || []; cur = Math.min(v.c || 0, Math.max(0, profiles.length - 1)); } catch (e) { profiles = []; } }
+function store() { try { localStorage.setItem(PK, JSON.stringify({ p: profiles, c: cur })); } catch (e) {} }
+
+function fromHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  const k = SOMI.norm(h.get("k")), c = SOMI.norm(h.get("c"));
+  if (location.hash) history.replaceState(null, "", location.pathname + location.search); // Code nicht in der Adresszeile stehen lassen
+  if (SOMI.valid(k, 6) && SOMI.valid(c, 4)) { addProfile(k, c); return true; }
+  if (SOMI.valid(k, 6)) { $("#inRoom").value = k; }
+  return false;
+}
+function addProfile(k, c) {
+  const i = profiles.findIndex(p => p.k === k);
+  if (i > -1) { profiles[i].c = c; cur = i; } else { profiles.push({ k, c }); cur = profiles.length - 1; }
+  store();
+}
+
+function showSetup(cancelable) {
+  $("#setup").hidden = false; $("#main").hidden = true; $("#conn").hidden = true;
+  $("#setupCancel").hidden = !cancelable; $("#setupErr").hidden = true;
+  if (!$("#inRoom").value) $("#inRoom").focus(); else $("#inCode").focus();
+}
+$("#setupForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const k = SOMI.norm($("#inRoom").value), c = SOMI.norm($("#inCode").value), err = $("#setupErr");
+  if (!SOMI.valid(k, 6)) { err.textContent = "Der Klassencode hat 6 Zeichen, z. B. HQ7KMB. Prüfe die Eingabe."; err.hidden = false; return; }
+  if (!SOMI.valid(c, 4)) { err.textContent = "Dein persönlicher Code hat 4 Zeichen, z. B. K7QX. Prüfe die Eingabe."; err.hidden = false; return; }
+  addProfile(k, c); $("#inRoom").value = ""; $("#inCode").value = ""; start();
+});
+$("#setupCancel").onclick = () => start();
+$("#addProfile").onclick = () => showSetup(true);
+$("#removeProfile").onclick = () => {
+  const p = profiles[cur]; if (!p) return;
+  const b = $("#removeProfile");
+  if (b.dataset.sure !== "1") { b.dataset.sure = "1"; b.textContent = "Wirklich abmelden?"; setTimeout(() => { b.dataset.sure = ""; b.textContent = "Abmelden"; }, 3000); return; }
+  profiles.splice(cur, 1); cur = 0; store(); b.dataset.sure = ""; b.textContent = "Abmelden";
+  profiles.length ? start() : (stop(), showSetup(false));
+};
+
+function stop() { if (link) link.close(); link = null; clearInterval(resendT); state = null; wantUp = false; }
+
+async function start() {
+  stop();
+  const p = profiles[cur]; if (!p) return showSetup(false);
+  $("#setup").hidden = true; $("#main").hidden = false; $("#conn").hidden = false;
+  $("#whoRoom").textContent = p.k; $("#whoCode").textContent = p.c;
+  $("#profiles").innerHTML = profiles.length > 1 ? profiles.map((q, i) => `<button type="button" data-i="${i}" aria-pressed="${i === cur}">${q.k}</button>`).join("") : "";
+  $("#profiles").querySelectorAll("[data-i]").forEach(b => b.onclick = () => { cur = +b.dataset.i; store(); start(); });
+  R = await SOMI.room(p.k); myId = await SOMI.personId(p.k, p.c);
+  const mine = link = new SOMI.Link(async (topic, payload) => {
+    if (link !== mine || topic !== R.stateTopic) return;
+    const s = await R.dec(payload); if (!s || typeof s.t !== "number") return;
+    if (state && s.t < state.t) return; // ältere Meldung eines zweiten Relays
+    if (!state || s.round !== state.round) wantUp = false;
+    state = s; render();
+  }, st => { if (link === mine) conn(st); });
+  link.subscribe(R.stateTopic);
+  conn(link.status()); render();
+  resendT = setInterval(resend, 3000);
+}
+function conn(st) {
+  const dot = $("#dot"), t = $("#connT");
+  dot.className = "dot " + (st.up ? "up" : "down");
+  t.textContent = st.up ? "verbunden" : "keine Verbindung";
+  if (!state) render();
+}
+
+const mineIn = list => Array.isArray(list) && list.includes(myId);
+async function send(up) {
+  if (!state || !state.open) return;
+  const p = profiles[cur];
+  const msg = { id: myId, round: state.round, tok: await SOMI.token(p.c, state.round), up, t: Date.now() };
+  link && link.publish(R.raiseTopic, await R.enc(msg), false);
+}
+function resend() {
+  if (!state || !state.open) return;
+  render();
+  const acked = mineIn(state.ids);
+  if (wantUp && !acked) send(true);
+  if (!wantUp && acked) send(false);
+}
+$("#hand").onclick = () => {
+  if (!state || !state.open || wantUp) return;
+  wantUp = true; withdrawn = null; sentAt = Date.now(); send(true); render();
+};
+$("#lower").onclick = () => { wantUp = false; withdrawn = state && state.round; send(false); render(); };
+
+async function keepAwake(on) {
+  try {
+    if (on && !wake && "wakeLock" in navigator) { wake = await navigator.wakeLock.request("screen"); wake.addEventListener("release", () => wake = null); }
+    if (!on && wake) { await wake.release(); wake = null; }
+  } catch (e) { wake = null; }
+}
+
+function render() {
+  const hand = $("#hand"), ht = $("#handT"), msg = $("#msg"), count = $("#count"), lower = $("#lower");
+  lower.hidden = true; count.textContent = "";
+  const st = link ? link.status() : { up: 0 };
+  if (!state) {
+    hand.className = "hand idle"; hand.disabled = true; ht.textContent = "Warten";
+    msg.textContent = st.up ? "Verbunden. Deine Lehrkraft hat für diese Klasse noch keine Meldephase gestartet." : "Verbinde … Prüfe die Internetverbindung, falls das länger dauert.";
+    keepAwake(false); return;
+  }
+  if (state.open && Date.now() - state.t > 5 * 60e3) { state = Object.assign({}, state, { open: false }); } // Lehr-App seit Minuten weg
+  if (state.open) {
+    keepAwake(true);
+    const acked = mineIn(state.ids);
+    if (acked && !wantUp && withdrawn !== state.round) { wantUp = true; sentAt = Date.now(); } // z. B. nach Neuladen der Seite
+    if (wantUp) {
+      hand.className = "hand sent"; hand.disabled = true;
+      ht.textContent = acked ? "Gemeldet" : "Wird gesendet";
+      msg.textContent = acked ? "Deine Meldung ist angekommen. Warte, bis die Meldephase endet."
+        : Date.now() - sentAt > 9000 ? "Deine Meldung kommt nicht an. Stimmt dein persönlicher Code? Frag sonst deine Lehrkraft."
+        : "Deine Meldung wird übermittelt …";
+      lower.hidden = false;
+    } else {
+      hand.className = "hand open"; hand.disabled = false; ht.textContent = "Melden";
+      msg.textContent = "Du kannst dich jetzt melden. Tippe auf die Hand.";
+    }
+    const n = (state.ids || []).length;
+    count.textContent = n === 1 ? "1 Meldung bisher" : `${n} Meldungen bisher`;
+    return;
+  }
+  keepAwake(false);
+  hand.disabled = true;
+  if (mineIn(state.picked) && state.round) {
+    hand.className = "hand turn"; ht.textContent = "Du bist dran";
+    msg.textContent = "Du wurdest ausgewählt. Jetzt bist du dran!";
+    if (lastRound !== state.round + "p" && navigator.vibrate) navigator.vibrate([120, 60, 120]);
+    lastRound = state.round + "p";
+    return;
+  }
+  hand.className = "hand idle"; ht.textContent = "Warten";
+  if (state.round && mineIn(state.ids)) msg.textContent = "Meldephase beendet. Deine Meldung wurde gezählt.";
+  else if (state.round) msg.textContent = "Die Meldephase ist beendet. Warte auf die nächste.";
+  else msg.textContent = "Gerade ist keine Meldung möglich.";
+}
+
+document.addEventListener("visibilitychange", () => { if (!document.hidden && state && state.open) keepAwake(true); });
+load();
+fromHash();
+profiles.length ? start() : showSetup(false);
+})();
+</script>
+</body>
+</html>

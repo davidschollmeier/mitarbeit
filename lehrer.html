@@ -1,0 +1,705 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>SoMi-Melden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: iPad-first single column of "Klassenbuch" sheets; ink-blue accent like a teacher's fountain pen; big touch targets. */
+:root{
+  --bg:#eef1f4; --surface:#ffffff; --ink:#16202a; --muted:#5a6876; --line:#d3dbe3;
+  --accent:#1c5aa3; --accent-ink:#ffffff; --mark:#e1ebf7; --good:#2f7d4f; --good-bg:#e3f2e8; --warn:#a6501a; --danger:#b42323;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Atkinson Hyperlegible",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --r:10px; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0e1318; --surface:#171f28; --ink:#e5ebf1; --muted:#95a3b1; --line:#2a3542;
+  --accent:#6ea8ec; --accent-ink:#081422; --mark:#1b2a3c; --good:#6cc18e; --good-bg:#16291f; --warn:#e39a62; --danger:#f07a7a; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.45;-webkit-tap-highlight-color:transparent;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:clamp(16px,3vw,32px);padding-block:20px 48px;display:flex;flex-direction:column;gap:20px}
+.inner{display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(28px,4vw,38px)} h2{font-size:22px} h3{font-size:18px}
+p{margin:0}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:700}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.bar .grow{flex:1;min-width:0}
+.sheet{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+button{font:inherit;font-size:16px;font-weight:700;min-height:48px;padding:0 18px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.ghost{background:transparent;border-color:transparent;color:var(--accent);padding:0 10px}
+button.danger{color:var(--danger)}
+button.stop{background:var(--danger);border-color:var(--danger);color:#fff}
+button.big{min-height:64px;font-size:19px;padding:0 26px}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-height:46px;width:100%}
+textarea{min-height:110px;font-family:var(--f-mono);font-size:14px}
+label.f{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:15px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg label{flex:1;min-width:180px;border:1px solid var(--line);border-radius:9px;padding:12px 14px;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.seg input{width:auto;min-height:0;margin-top:4px}
+.seg label:has(input:checked){border-color:var(--accent);background:var(--mark)}
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:14px;padding:12px 4px;border-top:1px solid var(--line);min-height:60px;cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left;font-weight:400;border-radius:0}
+.row:first-child{border-top:0}
+.row .grow{flex:1;min-width:0}
+.row .t{font-weight:700;overflow-wrap:anywhere}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;background:var(--mark);color:var(--accent);white-space:nowrap}
+.code{font-family:var(--f-mono);font-weight:600;letter-spacing:.08em;padding:2px 8px;border-radius:6px;border:1.5px solid var(--line);background:var(--bg);white-space:nowrap}
+.avg{font-family:var(--f-mono);font-weight:600;font-variant-numeric:tabular-nums;text-align:right;min-width:86px}
+.avg small{display:block;font-family:var(--f-body);font-weight:400;font-size:12px;color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-family:var(--f-mono);font-size:14px;font-weight:600;padding:2px 8px;border-radius:6px;background:var(--mark);color:var(--ink)}
+.students{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.stu{border:1px solid var(--line);border-radius:var(--r);padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--surface);cursor:pointer;text-align:left;font-weight:400;min-height:0;align-items:stretch}
+.stu.raised{border-color:var(--good);box-shadow:inset 0 0 0 2px var(--good)}
+.stu .top{display:flex;gap:10px;align-items:center}
+.stu .name{font-weight:700;flex:1;min-width:0;overflow-wrap:anywhere}
+.stu .meta{font-size:13px;color:var(--muted);display:flex;gap:12px;flex-wrap:wrap}
+.stu .meta b{color:var(--ink);font-family:var(--f-mono)}
+.meter{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--accent)}
+table{border-collapse:collapse;width:100%}
+th,td{padding:8px;border-top:1px solid var(--line);text-align:left;font-size:15px;vertical-align:top}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-top:0}
+.tablewrap{overflow-x:auto}
+button.link{min-height:0;padding:0;border:0;background:none;font-weight:700;color:var(--ink);text-align:left;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;display:inline}
+.note{border-left:3px solid var(--warn);padding:8px 12px;background:var(--mark);border-radius:0 8px 8px 0;font-size:15px}
+.lockbox{max-width:460px;margin:8vh auto 0}
+.live{border:2px solid var(--good);background:var(--good-bg);border-radius:var(--r);padding:18px 20px;display:flex;flex-direction:column;gap:12px}
+.live .livecount{font-family:var(--f-display);font-size:44px;font-weight:700;line-height:1;color:var(--good);font-variant-numeric:tabular-nums}
+.livedot{width:12px;height:12px;border-radius:50%;background:var(--good);display:inline-block;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--muted)}
+.status i{width:10px;height:10px;border-radius:50%;background:var(--muted);display:inline-block}
+.status.up i{background:var(--good)} .status.down i{background:var(--danger)}
+.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 45%,transparent);display:flex;align-items:flex-end;justify-content:center;z-index:20;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+@media (min-width:700px){.overlay{align-items:center}}
+.modal{background:var(--surface);color:var(--ink);border-radius:14px;width:min(760px,100%);max-height:calc(100% - 8px);overflow:auto;padding:22px;display:flex;flex-direction:column;gap:16px;border:1px solid var(--line)}
+.pad{display:grid;gap:8px}
+.pad.sek1{grid-template-columns:repeat(3,minmax(0,1fr))}
+.pad.sek2{grid-template-columns:repeat(4,minmax(0,1fr))}
+.pad button{font-family:var(--f-mono);font-size:22px;min-height:58px;padding:0}
+.pad .g6{grid-column:2}
+.pick{font-family:var(--f-display);font-size:clamp(34px,6vw,54px);font-weight:700;text-align:center;line-height:1.1;padding:10px 0;color:var(--accent);overflow-wrap:anywhere}
+.toggle{display:flex;align-items:center;gap:10px;font-size:15px}
+.toggle input{width:22px;height:22px;min-height:0}
+.pool{display:flex;flex-direction:column;gap:8px}
+.pool button{justify-content:flex-start;text-align:left;font-weight:400;min-height:56px;gap:12px}
+.pool button .grow{flex:1;min-width:0;font-weight:700}
+.pool .chance{font-family:var(--f-mono);font-size:14px;color:var(--muted);text-align:right}
+.pool .bar2{width:70px;height:6px;border-radius:3px;background:var(--line);overflow:hidden;flex:none}
+.pool .bar2 i{display:block;height:100%;background:var(--accent)}
+.toggles{display:flex;flex-wrap:wrap;gap:8px}
+.toggles button{min-height:42px;font-weight:400;font-size:15px;padding:0 12px}
+.toggles button[aria-pressed="true"]{background:var(--mark);border-color:var(--accent);font-weight:700}
+.beamer{display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center}
+.beamer .bigcode{font-family:var(--f-mono);font-size:clamp(48px,10vw,88px);font-weight:600;letter-spacing:.12em;line-height:1}
+.beamer svg{width:min(320px,70vw);height:auto;background:#fff;padding:10px;border-radius:8px}
+.url{font-family:var(--f-mono);font-size:15px;overflow-wrap:anywhere}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:9px;font-weight:700;z-index:40;max-width:calc(100% - 32px)}
+.empty{padding:22px;text-align:center;color:var(--muted);border:1.5px dashed var(--line);border-radius:var(--r);display:flex;flex-direction:column;gap:12px;align-items:center}
+#printArea{display:none}
+@media print{
+  @page{size:A4;margin:10mm}
+  body{background:#fff;color:#000;padding:0}
+  .wrap,.overlay,.toast{display:none!important}
+  #printArea{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .slip{border:1px dashed #999;padding:5mm;display:flex;gap:4mm;align-items:center;break-inside:avoid;height:54mm;overflow:hidden;font-family:var(--f-body)}
+  .slip svg{width:34mm;height:34mm;flex:none}
+  .slip .n{font-weight:700;font-size:13pt}
+  .slip .c{font-family:var(--f-mono);font-size:20pt;font-weight:600;letter-spacing:.12em}
+  .slip .i{font-size:8pt;color:#333;overflow-wrap:anywhere;margin-top:1mm}
+  .slip>div{min-width:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app">
+  <!-- LOCK -->
+  <section id="v-lock" class="lockbox sheet">
+    <div class="eyebrow">Sonstige Mitarbeit</div>
+    <h1>SoMi-Melden</h1>
+    <p class="muted" id="lockText"></p>
+    <form id="lockForm" style="display:flex;flex-direction:column;gap:12px">
+      <label class="f" for="pw1">Passwort<input type="password" id="pw1" autocomplete="current-password" required minlength="6"></label>
+      <label class="f" id="pw2wrap" for="pw2" hidden>Passwort wiederholen<input type="password" id="pw2" autocomplete="new-password"></label>
+      <p class="note" id="pwHint" hidden>Ohne dieses Passwort lassen sich die Daten nicht wiederherstellen. Es wird nirgends gespeichert.</p>
+      <p id="lockErr" style="color:var(--danger)" hidden></p>
+      <button class="primary big" id="lockBtn" type="submit">Entsperren</button>
+    </form>
+    <button class="ghost" id="restoreFromLock" type="button">Sicherung einspielen …</button>
+  </section>
+
+  <!-- HOME -->
+  <section id="v-home" class="inner" hidden>
+    <div class="bar"><div class="grow"><div class="eyebrow">SoMi-Melden</div><h1>Klassen &amp; Kurse</h1></div>
+      <button id="lockNow" type="button">Sperren</button></div>
+    <div class="grid2">
+      <div class="sheet">
+        <h2>Neu anlegen</h2>
+        <label class="f" for="nName">Bezeichnung<input id="nName" placeholder="z. B. 7d Mathematik oder Q2 GK Chemie"></label>
+        <div class="seg" role="radiogroup" aria-label="Art">
+          <label><input type="radio" name="nType" value="sek1" checked><span><b>Klasse</b><br><span class="muted">Noten 1 bis 6 mit Tendenz</span></span></label>
+          <label><input type="radio" name="nType" value="sek2"><span><b>Oberstufenkurs</b><br><span class="muted">0 bis 15 Punkte</span></span></label>
+        </div>
+        <label class="f" for="nFile">Namensliste als CSV<input type="file" id="nFile" accept=".csv,text/csv,text/plain"></label>
+        <label class="f" for="nPaste">… oder Liste einfügen<textarea id="nPaste" placeholder="Nachname;Vorname&#10;Abel;Mia&#10;Brandt;Jonas"></textarea></label>
+        <p class="muted small">Spalten werden erkannt: Nachname, Vorname. Ohne Kopfzeile gilt: 1. Spalte Nachname, 2. Spalte Vorname. Trennzeichen ; , oder Tab. Jede Person bekommt automatisch einen persönlichen Code.</p>
+        <div id="nPreview"></div>
+        <button class="primary" id="nCreate" type="button" disabled>Anlegen</button>
+      </div>
+      <div class="sheet">
+        <h2>Vorhanden</h2>
+        <div id="classList" class="list"></div>
+        <div class="bar" style="border-top:1px solid var(--line);padding-top:14px">
+          <button id="backupBtn" type="button">Sicherung exportieren</button>
+          <button id="restoreBtn" type="button">Sicherung einspielen</button>
+        </div>
+        <p class="muted small">Die Sicherung ist mit deinem Passwort verschlüsselt. Exportiere sie regelmäßig, denn Safari kann Website-Daten löschen. Sicherungen aus dem SoMi-Scanner lassen sich hier einspielen.</p>
+        <label class="f" for="studentUrl" style="border-top:1px solid var(--line);padding-top:14px">Adresse der Schülerseite<input id="studentUrl" inputmode="url" spellcheck="false"></label>
+        <p class="muted small">Steht normalerweise schon richtig da: die Seite <span class="mono">index.html</span> im selben Ordner wie diese App.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CLASS -->
+  <section id="v-class" class="inner" hidden>
+    <div class="bar"><button class="ghost" data-go="home" type="button">‹ Übersicht</button><span class="grow"></span><span class="status" id="cStatus"><i></i><span></span></span></div>
+    <div class="bar"><div class="grow"><div class="eyebrow" id="cType"></div><h1 id="cName"></h1></div>
+      <button class="primary big" id="newSession" type="button"></button></div>
+    <div class="grid2">
+      <div class="inner">
+        <div class="sheet">
+          <h2>Zugang für die Klasse</h2>
+          <p>Klassencode <span class="code" id="cRoom" style="font-size:20px"></span></p>
+          <p class="muted small">Die Schülerinnen und Schüler öffnen die Schülerseite und geben den Klassencode und ihren persönlichen Code ein. Am einfachsten scannen sie einmal den QR-Code auf ihrem Zettel.</p>
+          <div class="bar"><button id="printSlips" type="button">Code-Zettel drucken</button><button id="showJoin" type="button">Für den Beamer zeigen</button></div>
+          <button class="ghost" id="newRoom" type="button" style="align-self:flex-start">Klassencode neu erzeugen</button>
+        </div>
+        <div class="sheet">
+          <h2>Sitzungen</h2>
+          <div id="sessList" class="list"></div>
+        </div>
+      </div>
+      <div class="sheet">
+        <div class="bar"><h2 class="grow">Schülerinnen und Schüler</h2><select id="sortBy" aria-label="Sortierung" style="width:auto"><option value="name">Nach Name</option><option value="raise">Nach Meldungen</option><option value="passed">Nach übergangen</option><option value="avg">Nach Schnitt</option></select><button id="exportCsv" type="button">CSV exportieren</button></div>
+        <p class="muted small">„Übergangen“ heißt: gemeldet, aber nicht drangekommen. Tippe auf einen Namen für den Verlauf.</p>
+        <div class="tablewrap"><table><thead><tr><th>Code</th><th>Name</th><th>Meldungen</th><th>Dran</th><th>Übergangen</th><th>Noten</th><th style="text-align:right">Schnitt</th><th></th></tr></thead><tbody id="stuTable"></tbody></table></div>
+        <div class="bar"><input id="addLast" placeholder="Nachname" style="flex:1;min-width:120px"><input id="addFirst" placeholder="Vorname" style="flex:1;min-width:120px"><button id="addStu" type="button">Hinzufügen</button></div>
+        <div class="bar" style="border-top:1px solid var(--line);padding-top:14px"><button class="danger" id="delClass" type="button">Klasse/Kurs löschen</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SESSION -->
+  <section id="v-session" class="inner" hidden>
+    <div class="bar"><button class="ghost" id="backToClass" type="button">‹ Zurück</button><span class="grow"></span><span class="status" id="sStatus"><i></i><span></span></span></div>
+    <div class="bar"><div class="grow"><div class="eyebrow" id="sClass"></div><h1 id="sDate"></h1><p class="muted" id="sStats"></p></div>
+      <button class="primary big" id="openBtn" type="button">Meldephase starten</button></div>
+    <div id="livePanel" class="live" hidden>
+      <div class="bar"><span class="livedot"></span><b class="grow">Meldephase läuft</b><span class="small muted" id="liveSince"></span></div>
+      <div class="bar"><span class="livecount" id="liveCount">0</span><span class="grow" id="liveLabel">Meldungen</span><button class="stop big" id="closeBtn" type="button">Meldephase beenden</button></div>
+      <div class="chips" id="liveNames"></div>
+      <label class="toggle"><input type="checkbox" id="hideNames"> Namen ausblenden (z. B. wenn das iPad am Beamer hängt)</label>
+    </div>
+    <div class="bar"><button id="showJoin2" type="button">Zugang für den Beamer</button><button id="manualPick" type="button">Ohne Geräte auslosen</button><span class="muted small">Tippe auf eine Person, um direkt eine Note einzutragen.</span></div>
+    <div id="stuGrid" class="students"></div>
+  </section>
+</div>
+
+<div id="overlay" class="overlay" hidden><div class="modal" id="modal" role="dialog" aria-modal="true"></div></div>
+<div id="toast" class="toast" hidden></div>
+<div id="printArea"></div>
+<input type="file" id="restoreIn" accept=".json,application/json" hidden>
+
+<script src="qrcode.js"></script>
+<script src="somi-core.js"></script>
+<script>
+(()=>{
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>crypto.getRandomValues(new Uint32Array(2)).join("").slice(0,14)+Date.now().toString(36);
+const VKEY="somi.vault.v1", ITER=250000;
+let S=null, KEY=null, SALT=null, view="lock", curC=null, curS=null, hiddenAt=0, sortBy="name";
+
+/* ---------- Verschlüsselter Speicher ---------- */
+const b64=u=>{let s="";const b=new Uint8Array(u);for(let i=0;i<b.length;i+=8192)s+=String.fromCharCode(...b.subarray(i,i+8192));return btoa(s)};
+const ub64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function derive(pw,salt,iter=ITER){
+  const base=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2",salt,iterations:iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
+}
+async function seal(obj){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:"AES-GCM",iv},KEY,new TextEncoder().encode(JSON.stringify(obj)));
+  return {somi:1,iter:ITER,salt:b64(SALT),iv:b64(iv),ct:b64(ct)};
+}
+async function open(env,pw){
+  const salt=ub64(env.salt), key=await derive(pw,salt,env.iter||ITER);
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:ub64(env.iv)},key,ub64(env.ct));
+  return {key,salt,data:JSON.parse(new TextDecoder().decode(pt))};
+}
+function readVault(){try{const v=localStorage.getItem(VKEY);return v?JSON.parse(v):null}catch{return null}}
+let saveT=null, storageOk=true;
+function save(){clearTimeout(saveT);saveT=setTimeout(async()=>{
+  if(!S||!KEY)return; const env=await seal(S);
+  try{localStorage.setItem(VKEY,JSON.stringify(env));storageOk=true}catch{ if(storageOk) toast("Speichern im Browser fehlgeschlagen. Bitte Sicherung exportieren."); storageOk=false;}
+},250)}
+
+/* ---------- Noten ---------- */
+const SEK1=[];[1,2,3,4,5].forEach(n=>{SEK1.push({l:n+"+",v:n-.3},{l:""+n,v:n},{l:n+"-",v:n+.3})});SEK1.push({l:"6",v:6});
+const SEK2=Array.from({length:16},(_,i)=>({l:""+(15-i),v:15-i}));
+const scale=c=>c.type==="sek2"?SEK2:SEK1;
+const fmtNum=(x,d=1)=>x.toLocaleString("de-DE",{minimumFractionDigits:d,maximumFractionDigits:d});
+function label(c,v){const sc=scale(c);let b=sc[0];for(const g of sc)if(Math.abs(g.v-v)<Math.abs(b.v-v))b=g;return b.l}
+function avgOf(c,sid,ses){const e=c.entries.filter(x=>x.s===sid&&(!ses||x.ses===ses));if(!e.length)return null;return e.reduce((a,x)=>a+x.v,0)/e.length}
+function avgText(c,a){if(a==null)return '<span class="muted">–</span>';return c.type==="sek2"?`${fmtNum(a)} P.<small>≈ ${label(c,a)} Punkte</small>`:`${fmtNum(a,2)}<small>Tendenz ${label(c,a)}</small>`}
+function meterPct(c,a){if(a==null)return 0;return c.type==="sek2"?a/15*100:(6-a)/5*100}
+
+/* ---------- Datum ---------- */
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
+const fmtDate=iso=>new Date(iso+"T12:00").toLocaleDateString("de-DE",{weekday:"short",day:"2-digit",month:"2-digit",year:"numeric"});
+const fmtTime=t=>new Date(t).toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"});
+
+/* ---------- UI ---------- */
+function toast(t){const el=$("#toast");el.textContent=t;el.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>el.hidden=true,2600)}
+function modal(html){$("#modal").innerHTML=html;$("#overlay").hidden=false;$("#modal").scrollTop=0;return $("#modal")}
+function closeModal(){$("#overlay").hidden=true;$("#modal").innerHTML="";}
+function ask(msg,yes="Löschen",danger=true){return new Promise(r=>{const m=modal(`<h2>${esc(msg)}</h2><div class="bar" style="justify-content:flex-end"><button type="button" id="aNo">Abbrechen</button><button type="button" class="${danger?"stop":"primary"}" id="aYes">${esc(yes)}</button></div>`);m.querySelector("#aNo").onclick=()=>{closeModal();r(false)};m.querySelector("#aYes").onclick=()=>{closeModal();r(true)};})}
+function show(v){view=v;for(const id of ["lock","home","class","session"])$("#v-"+id).hidden=id!==v;window.scrollTo(0,0);if(v==="home"||v==="lock")disconnect();render()}
+const cls=()=>S.classes.find(c=>c.id===curC);
+const sortStu=a=>[...a].sort((x,y)=>(x.last+" "+x.first).localeCompare(y.last+" "+y.first,"de"));
+const nm=s=>`${s.first} ${s.last}`.trim();
+const stuOf=(c,id)=>c.students.find(x=>x.id===id);
+const raisesOf=(c,sid,ses)=>c.raises.filter(r=>r.s===sid&&(!ses||r.ses===ses));
+const plural=(n,a,b)=>`${n} ${n===1?a:b}`;
+
+/* Neue Felder ergänzen (auch für Sicherungen aus dem SoMi-Scanner) */
+function migrate(){
+  if(S.weighted===undefined)S.weighted=true;
+  for(const c of S.classes){
+    c.raises=c.raises||[]; c.entries=c.entries||[]; c.sessions=c.sessions||[];
+    if(!c.room)c.room=SOMI.randCode(6);
+    const used=new Set();
+    for(const s of c.students){ if(!s.code||used.has(s.code)){ do{s.code=SOMI.randCode(4)}while(used.has(s.code)) } used.add(s.code); delete s.card; }
+  }
+}
+function newCode(c){const used=new Set(c.students.map(s=>s.code));let k;do{k=SOMI.randCode(4)}while(used.has(k));return k}
+
+/* ---------- Sperre ---------- */
+function setupLock(){
+  const v=readVault(), isNew=!v;
+  $("#pw2wrap").hidden=!isNew;$("#pwHint").hidden=!isNew;$("#pw2").required=isNew;
+  $("#lockBtn").textContent=isNew?"Tresor anlegen":"Entsperren";
+  $("#pw1").autocomplete=isNew?"new-password":"current-password";
+  $("#lockText").textContent=isNew?"Lege ein Passwort fest. Damit werden Namen, Codes und Noten verschlüsselt, bevor sie auf diesem Gerät gespeichert werden.":"Deine Klassen und Noten liegen verschlüsselt nur auf diesem Gerät.";
+  $("#lockErr").hidden=true;$("#pw1").value="";$("#pw2").value="";
+}
+$("#lockForm").addEventListener("submit",async e=>{
+  e.preventDefault();const pw=$("#pw1").value, v=readVault(), err=$("#lockErr");err.hidden=true;
+  $("#lockBtn").disabled=true;
+  try{
+    if(!v){
+      if(pw.length<6){err.textContent="Bitte mindestens 6 Zeichen verwenden.";err.hidden=false;return}
+      if(pw!==$("#pw2").value){err.textContent="Die beiden Passwörter stimmen nicht überein.";err.hidden=false;return}
+      SALT=crypto.getRandomValues(new Uint8Array(16));KEY=await derive(pw,SALT);S={v:2,classes:[],weighted:true};save();
+    }else{
+      const o=await open(v,pw);KEY=o.key;SALT=o.salt;S=o.data;migrate();save();
+    }
+    show("home");
+  }catch{err.textContent="Passwort falsch. Bitte erneut versuchen.";err.hidden=false}
+  finally{$("#lockBtn").disabled=false}
+});
+async function lock(){if(live){endRound(true);await sendState()}S=null;KEY=null;closeModal();setupLock();show("lock")}
+$("#lockNow").onclick=lock;
+document.addEventListener("visibilitychange",()=>{if(document.hidden)hiddenAt=Date.now();else if(S&&hiddenAt&&Date.now()-hiddenAt>10*60e3)lock()});
+
+/* ---------- Dateien ---------- */
+function offerFile(filename,data,mime){
+  try{
+    const url=URL.createObjectURL(new Blob([data],{type:mime}));
+    const a=document.createElement("a");a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);toast(`${filename} wird gespeichert`);
+  }catch(e){
+    const m=modal(`<h2>${esc(filename)}</h2><p class="muted">Kopiere den Inhalt und lege ihn als ${esc(filename)} ab.</p><textarea id="cpy" readonly style="min-height:220px">${esc(data)}</textarea><div class="bar" style="justify-content:flex-end"><button type="button" id="cpyB">Kopieren</button><button type="button" class="primary" id="cpyX">Schließen</button></div>`);
+    m.querySelector("#cpyB").onclick=()=>{const t=m.querySelector("#cpy");navigator.clipboard.writeText(t.value).then(()=>toast("Kopiert"),()=>{t.focus();t.select()})};
+    m.querySelector("#cpyX").onclick=closeModal;
+  }
+}
+$("#backupBtn").onclick=async()=>{const env=await seal(S);offerFile(`SoMi-Sicherung-${today()}.json`,JSON.stringify(env),"application/json")};
+const startRestore=()=>$("#restoreIn").click();
+$("#restoreBtn").onclick=startRestore;$("#restoreFromLock").onclick=startRestore;
+$("#restoreIn").onchange=async e=>{
+  const f=e.target.files[0];e.target.value="";if(!f)return;
+  let env;try{env=JSON.parse(await f.text());if(!env.somi||!env.ct)throw 0}catch{toast("Das ist keine SoMi-Sicherung.");return}
+  if(!await ask("Sicherung einspielen? Die aktuellen Daten auf diesem Gerät werden ersetzt.","Einspielen"))return;
+  try{localStorage.setItem(VKEY,JSON.stringify(env))}catch{toast("Speichern auf diesem Gerät nicht möglich.");return}
+  toast("Sicherung eingespielt. Mit dem Passwort der Sicherung entsperren.");lock();
+};
+
+/* ---------- Adresse der Schülerseite ---------- */
+const defaultUrl=()=>{try{return new URL("./",location.href).href}catch{return ""}};
+const studentUrl=()=>((S&&S.studentUrl)||defaultUrl());
+$("#studentUrl").addEventListener("change",e=>{const v=e.target.value.trim();S.studentUrl=v&&v!==defaultUrl()?v:"";save();toast("Adresse gespeichert")});
+const joinLink=(room,code)=>{const u=studentUrl().split("#")[0];return u+"#k="+room+(code?"&c="+code:"")};
+function qrSvg(text,cell=4){const q=qrcode(0,"M");q.addData(text);q.make();return q.createSvgTag({cellSize:cell,margin:2,scalable:true})}
+
+/* ---------- CSV ---------- */
+function parseCSV(text){
+  text=text.replace(/^﻿/,"").replace(/\r\n?/g,"\n").trim();if(!text)return [];
+  const first=text.split("\n")[0];const cnt=ch=>first.split(ch).length;
+  const delim=[";","\t",","].sort((a,b)=>cnt(b)-cnt(a))[0];
+  const rows=[];let row=[],cell="",q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){if(ch==='"'){if(text[i+1]==='"'){cell+='"';i++}else q=false}else cell+=ch}
+    else if(ch==='"')q=true; else if(ch===delim){row.push(cell.trim());cell=""} else if(ch==="\n"){row.push(cell.trim());rows.push(row);row=[];cell=""} else cell+=ch}
+  row.push(cell.trim());rows.push(row);
+  return rows.filter(r=>r.some(c=>c));
+}
+function rowsToStudents(rows){
+  if(!rows.length)return [];
+  const h=rows[0].map(c=>c.toLowerCase());
+  const has=re=>h.findIndex(c=>re.test(c));
+  let iL=has(/nach|familien|^name$|surname|last/), iF=has(/vor|rufname|first/), body=rows;
+  if(iL>-1||iF>-1){body=rows.slice(1)}else{iL=0;iF=rows[0].length>1?1:-1}
+  const used=new Set();
+  return body.map(r=>{let last=(r[iL]||"").trim(),first=iF>-1?(r[iF]||"").trim():"";
+    if(iF===-1&&last.includes(",")){[last,first]=last.split(",").map(s=>s.trim())}
+    else if(iF===-1&&last.includes(" ")){const p=last.split(/\s+/);last=p.pop();first=p.join(" ")}
+    let code;do{code=SOMI.randCode(4)}while(used.has(code));used.add(code);
+    return {id:uid(),last,first,code}}).filter(s=>s.last||s.first);
+}
+let pending=[];
+function updatePreview(){
+  pending=rowsToStudents(parseCSV($("#nPaste").value));
+  const p=$("#nPreview");
+  p.innerHTML=pending.length?`<p><b>${pending.length} Personen erkannt.</b></p><div class="tablewrap" style="max-height:220px;overflow:auto"><table><tbody>${sortStu(pending).map(s=>`<tr><td>${esc(s.last)}, ${esc(s.first)}</td></tr>`).join("")}</tbody></table></div>`:"";
+  $("#nCreate").disabled=!$("#nName").value.trim();
+}
+$("#nPaste").addEventListener("input",updatePreview);$("#nName").addEventListener("input",updatePreview);
+$("#nFile").onchange=async e=>{const f=e.target.files[0];if(!f)return;let t=await f.text();if(t.includes("�")){t=new TextDecoder("windows-1252").decode(await f.arrayBuffer())}$("#nPaste").value=t;if(!$("#nName").value)$("#nName").value=f.name.replace(/\.[^.]+$/,"");updatePreview()};
+$("#nCreate").onclick=()=>{
+  const name=$("#nName").value.trim();if(!name)return;
+  const type=document.querySelector('input[name="nType"]:checked').value;
+  const c={id:uid(),name,type,room:SOMI.randCode(6),students:pending,sessions:[],entries:[],raises:[],created:today()};
+  S.classes.push(c);save();pending=[];$("#nName").value="";$("#nPaste").value="";$("#nFile").value="";updatePreview();
+  curC=c.id;show("class");toast(`${name} angelegt`);
+};
+
+/* ---------- Live-Kanal ---------- */
+let link=null, linkRoom=null, R=null, idMap=new Map(), live=null, lastClosed=null, pubT=null, beatT=null, lastPicked=[];
+// live = {cid, ses, round, open, raised: Map(sid -> t), since}
+async function connect(c){
+  if(linkRoom===c.room)return;
+  disconnect();
+  linkRoom=c.room; const r=await SOMI.room(c.room); if(linkRoom!==c.room)return; R=r; await refreshIds(c);
+  let ups=0;
+  const mine=link=new SOMI.Link((t,p)=>{if(link===mine)onMsg(t,p)},st=>{if(link!==mine)return;if(st.up>ups)publishState();ups=st.up;statusUI()});
+  link.subscribe(R.raiseTopic);
+  statusUI();
+  publishState(); // Zustand für die Klasse festlegen (z. B. nach Neustart: keine offene Meldephase)
+}
+function disconnect(){if(link){link.close();link=null;linkRoom=null;R=null}statusUI()}
+async function refreshIds(c){
+  const m=new Map();
+  await Promise.all(c.students.map(async s=>m.set(await SOMI.personId(c.room,s.code),s)));
+  idMap=m;
+}
+function statusUI(){
+  const st=link?link.status():{up:0,total:0};
+  for(const id of ["#cStatus","#sStatus"]){const el=$(id);if(!el)continue;
+    el.className="status "+(link?(st.up?"up":"down"):"");
+    el.querySelector("span").textContent=!link?"":st.up?(st.up===st.total?"Live-Kanal verbunden":"Live-Kanal verbunden (eingeschränkt)"):"Live-Kanal: verbinde …";}
+  if(view==="session")$("#openBtn").disabled=!(link&&st.up)&&!live;
+}
+async function onMsg(topic,payload){
+  if(!R||topic!==R.raiseTopic||!live||!live.open)return;
+  const m=await R.dec(payload);if(!m||m.round!==live.round)return;
+  const s=idMap.get(m.id);if(!s)return;
+  if(m.tok!==await SOMI.token(s.code,live.round))return; // gefälschte Meldung
+  const had=live.raised.has(s.id);
+  if(m.up&&!had)live.raised.set(s.id,Date.now());
+  else if(!m.up&&had)live.raised.delete(s.id);
+  else{publishState();return} // doppelt angekommen: Bestätigung erneut senden
+  persistLive();publishState();liveUI();
+}
+function idOf(s){for(const [k,v] of idMap)if(v===s)return k;return null}
+function publishState(){clearTimeout(pubT);pubT=setTimeout(sendState,120)}
+async function sendState(){
+  clearTimeout(pubT);
+  if(!S||!link||!R)return;const c=cls();if(!c)return;
+  const l=link,r=R;
+  const cur=live&&live.cid===c.id?{round:live.round,sids:[...live.raised.keys()]}:lastClosed&&lastClosed.cid===c.id?lastClosed:null;
+  const ids=cur?cur.sids.map(sid=>idOf(stuOf(c,sid))).filter(Boolean):[];
+  const st={v:1,open:!!(live&&live.open&&live.cid===c.id),round:cur?cur.round:null,ids,picked:cur?lastPicked:[],t:Date.now()};
+  l.publish(r.stateTopic,await r.enc(st),true);
+}
+function persistLive(){const c=cls();if(!c)return;c.live=live&&live.open?{round:live.round,ses:live.ses,since:live.since,raised:[...live.raised]}:null;save()}
+
+function startRound(){
+  const c=cls();
+  live={cid:c.id,ses:curS,round:uid(),open:true,raised:new Map(),since:Date.now()};lastPicked=[];lastClosed=null;
+  persistLive();publishState();
+  clearInterval(beatT);beatT=setInterval(publishState,60000);
+  liveUI();toast("Meldephase gestartet");
+}
+function endRound(silent){
+  if(!live)return;const c=S&&S.classes.find(x=>x.id===live.cid);
+  clearInterval(beatT);
+  const round=live.round, raised=[...live.raised.keys()];
+  live.open=false;lastClosed={cid:live.cid,round,sids:raised};
+  if(c){
+    const ses=live.ses;
+    for(const sid of raised){ if(!c.raises.some(r=>r.r===round&&r.s===sid)) c.raises.push({id:uid(),r:round,s:sid,ses,t:live.raised.get(sid),src:"geraet",picked:false}); }
+    c.live=null;save();
+  }
+  publishState();
+  const done=live;live=null;liveUI();
+  if(!silent&&c){resultSheet(new Set(raised),round,`<h2>${plural(raised.length,"Meldung","Meldungen")}</h2>`)}
+  return done;
+}
+function liveUI(){
+  const on=!!(live&&live.open&&live.cid===curC&&live.ses===curS);
+  $("#livePanel").hidden=!on;$("#openBtn").hidden=on;
+  if(on){
+    const c=cls(),n=live.raised.size;
+    $("#liveCount").textContent=n;$("#liveLabel").textContent=n===1?"Meldung":"Meldungen";
+    $("#liveSince").textContent="seit "+fmtTime(live.since);
+    $("#liveNames").innerHTML=$("#hideNames").checked?"":[...live.raised.keys()].map(sid=>stuOf(c,sid)).filter(Boolean).map(s=>`<span class="chip">${esc(nm(s))}</span>`).join("");
+    $("#closeBtn").disabled=false;
+  }
+  if(view==="session")rSession();
+}
+$("#hideNames").onchange=()=>{S.hideNames=$("#hideNames").checked;save();liveUI()};
+$("#openBtn").onclick=startRound;
+$("#closeBtn").onclick=()=>endRound(false);
+
+/* ---------- Auswahl ---------- */
+function pickedToday(c,sid){return c.raises.filter(r=>r.s===sid&&r.ses===curS&&r.picked).length}
+function weightOf(c,sid,round){
+  if(!S.weighted)return 1;
+  const all=c.raises.filter(r=>r.s===sid&&r.r!==round);
+  const picked=all.filter(r=>r.picked).length, passed=all.length-picked;
+  return Math.sqrt((1+passed)/(1+picked))/(1+2*pickedToday(c,sid));
+}
+function chances(c,ids,round){const w=ids.map(id=>weightOf(c,id,round));const t=w.reduce((a,b)=>a+b,0)||1;return new Map(ids.map((id,i)=>[id,w[i]/t]))}
+function drawFrom(c,ids,round){
+  const ch=chances(c,ids,round);let r=crypto.getRandomValues(new Uint32Array(1))[0]/2**32;
+  for(const id of ids){r-=ch.get(id);if(r<=0)return id}return ids[ids.length-1];
+}
+function markPicked(c,sid,round){
+  let r=c.raises.find(x=>x.r===round&&x.s===sid);
+  if(!r){r={id:uid(),r:round,s:sid,ses:curS,t:Date.now(),src:"hand",picked:false};c.raises.push(r)}
+  r.picked=true;save();
+  if(link&&R){const id=idOf(stuOf(c,sid));if(id){lastPicked=[id];publishState()}}
+}
+/* Ergebnis einer Meldephase: Person antippen oder zufällig ziehen */
+function resultSheet(pool,round,head){
+  const c=cls(),ids=[...pool];
+  if(!ids.length){
+    const m=modal(`${head}<p class="muted">In dieser Meldephase hat sich niemand gemeldet.</p><div class="bar" style="justify-content:flex-end"><button type="button" class="primary" id="rX">Schließen</button></div>`);
+    m.querySelector("#rX").onclick=closeModal;return;
+  }
+  const ch=chances(c,ids,round),max=Math.max(...ch.values());
+  const rows=ids.map(id=>stuOf(c,id)).filter(Boolean).sort((a,b)=>ch.get(b.id)-ch.get(a.id)||nm(a).localeCompare(nm(b),"de"));
+  const m=modal(`${head}
+    <p class="muted small">Tippe auf eine Person, um sie selbst auszuwählen, oder lass zufällig ziehen.${S.weighted?" Wer seltener drankam, hat eine höhere Chance.":""}</p>
+    <div class="pool">${rows.map(s=>{const all=raisesOf(c,s.id).filter(r=>r.r!==round),pk=all.filter(r=>r.picked).length;return `<button type="button" data-p="${s.id}"><span class="grow">${esc(nm(s))}<br><span class="muted small" style="font-weight:400">${plural(all.length,"Meldung","Meldungen")} vorher · ${pk}× dran${pickedToday(c,s.id)?` · heute schon ${pickedToday(c,s.id)}× dran`:""}</span></span><span class="bar2"><i style="width:${ch.get(s.id)/max*100}%"></i></span><span class="chance">${Math.round(ch.get(s.id)*100)} %</span></button>`}).join("")}</div>
+    <label class="toggle"><input type="checkbox" id="wt" ${S.weighted?"checked":""}> Wer seltener drankam, wird bevorzugt</label>
+    <div class="bar" style="justify-content:flex-end"><button type="button" id="rX">Niemanden auswählen</button><button type="button" class="primary big" id="rGo">Zufällig auswählen</button></div>`);
+  m.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>chosen(b.dataset.p,pool,round,head,false));
+  m.querySelector("#wt").onchange=e=>{S.weighted=e.target.checked;save();resultSheet(pool,round,head)};
+  m.querySelector("#rX").onclick=closeModal;
+  m.querySelector("#rGo").onclick=()=>reveal(pool,round,head);
+}
+function reveal(pool,round,head){
+  const c=cls(),ids=[...pool],pick=drawFrom(c,ids,round);
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const m=modal(`<p class="eyebrow" style="text-align:center">Ausgewählt</p><div class="pick" id="pk">…</div>`);
+  const el=m.querySelector("#pk");let i=0;
+  const done=()=>chosen(pick,pool,round,head,true);
+  if(reduce||ids.length<2){el.textContent=nm(stuOf(c,pick));setTimeout(done,reduce?300:500);return}
+  const names=ids.map(id=>nm(stuOf(c,id)));
+  const tick=()=>{el.textContent=names[i++%names.length];if(i<14)setTimeout(tick,60+i*12);else{el.textContent=nm(stuOf(c,pick));setTimeout(done,650)}};tick();
+}
+function chosen(sid,pool,round,head,random){
+  const c=cls();markPicked(c,sid,round);rSession();
+  const rest=new Set(pool);rest.delete(sid);
+  gradeSheet(sid,{
+    pre:`<p class="eyebrow">${random?"Zufällig ausgewählt":"Ausgewählt"} aus ${plural(pool.size,"Meldung","Meldungen")}</p>`,
+    extra:rest.size?`<button type="button" id="gNext">Ohne Note weiter</button>`:"",
+    closeLabel:"Fertig",
+    after:()=>{rest.size?afterPick(rest,round,head):closeModal()},
+    bind:mm=>{const b=mm.querySelector("#gNext");if(b)b.onclick=()=>afterPick(rest,round,head)}
+  });
+}
+function afterPick(rest,round,head){
+  const c=cls();
+  const m=modal(`<h2>Noch ${plural(rest.size,"Meldung","Meldungen")} aus dieser Runde</h2><p class="muted">${[...rest].map(id=>esc(nm(stuOf(c,id)))).join(", ")}</p>
+  <div class="bar" style="justify-content:flex-end"><button type="button" id="aDone">Fertig</button><button type="button" id="aList">Selbst auswählen</button><button type="button" class="primary big" id="aAgain">Zufällig ziehen</button></div>`);
+  m.querySelector("#aDone").onclick=closeModal;m.querySelector("#aList").onclick=()=>resultSheet(rest,round,head);m.querySelector("#aAgain").onclick=()=>reveal(rest,round,head);
+}
+/* Ohne Geräte: Meldungen von Hand antippen */
+$("#manualPick").onclick=()=>{
+  const c=cls(),pool=new Set(),round=uid();lastClosed=null;lastPicked=[];
+  const draw=()=>{
+    const m=modal(`<h2>Ohne Geräte auslosen</h2><p class="muted small">Tippe alle an, die sich melden. Sie werden beim Weiter als Meldung gespeichert.</p>
+      <div class="toggles">${sortStu(c.students).map(s=>`<button type="button" aria-pressed="${pool.has(s.id)}" data-t="${s.id}">${esc(nm(s))}</button>`).join("")}</div>
+      <div class="bar" style="justify-content:flex-end"><button type="button" id="mX">Abbrechen</button><button type="button" class="primary big" id="mGo" ${pool.size?"":"disabled"}>Weiter (${pool.size})</button></div>`);
+    m.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{const id=b.dataset.t;pool.has(id)?pool.delete(id):pool.add(id);b.setAttribute("aria-pressed",pool.has(id));const g=m.querySelector("#mGo");g.disabled=!pool.size;g.textContent=`Weiter (${pool.size})`});
+    m.querySelector("#mX").onclick=closeModal;
+    m.querySelector("#mGo").onclick=()=>{for(const sid of pool)c.raises.push({id:uid(),r:round,s:sid,ses:curS,t:Date.now(),src:"hand",picked:false});save();rSession();resultSheet(pool,round,`<h2>${plural(pool.size,"Meldung","Meldungen")}</h2>`)};
+  };draw();
+};
+
+/* ---------- Noten vergeben ---------- */
+function gradeSheet(sid,opts={}){
+  const c=cls(),s=stuOf(c,sid),ses=curS;
+  const todays=c.entries.filter(e=>e.s===sid&&e.ses===ses);
+  const m=modal(`${opts.pre||""}<div class="bar"><h2 class="grow">${esc(nm(s))}</h2><span class="avg">${avgText(c,avgOf(c,sid))}</span></div>
+    <p class="eyebrow">${c.type==="sek2"?"Punkte für diesen Beitrag":"Note für diesen Beitrag"}</p>
+    <div class="pad ${c.type}">${scale(c).map(g=>`<button type="button" data-v="${g.v}" class="${g.l==="6"?"g6":""}">${g.l}</button>`).join("")}</div>
+    ${todays.length?`<div><p class="eyebrow">Heute bereits</p><div class="chips" style="margin-top:6px">${todays.map(e=>`<span class="chip">${label(c,e.v)} <button type="button" class="ghost danger" style="min-height:28px;padding:0 4px" data-del="${e.id}" aria-label="Note löschen">✕</button></span>`).join("")}</div></div>`:""}
+    <div class="bar" style="justify-content:flex-end">${opts.extra||""}<button type="button" id="gClose">${opts.closeLabel||"Schließen"}</button></div>`);
+  m.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{
+    c.entries.push({id:uid(),s:sid,ses,v:parseFloat(b.dataset.v),t:Date.now()});save();
+    toast(`${nm(s)}: ${b.textContent} gespeichert`);rSession();
+    opts.after?opts.after():closeModal();
+  });
+  m.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{c.entries=c.entries.filter(e=>e.id!==b.dataset.del);save();rSession();gradeSheet(sid,opts)});
+  m.querySelector("#gClose").onclick=closeModal;
+  if(opts.bind)opts.bind(m);
+}
+
+/* ---------- Zugang & Zettel ---------- */
+function joinSheet(){
+  const c=cls(),url=joinLink(c.room);
+  const m=modal(`<div class="beamer"><p class="eyebrow">${esc(c.name)}</p><h2>Schülerseite öffnen und Klassencode eingeben</h2>
+    ${qrSvg(url,6)}<p class="url">${esc(studentUrl())}</p><p class="muted">Klassencode</p><div class="bigcode">${c.room}</div>
+    <p class="muted small">Den persönlichen Code findet jede Person auf ihrem Zettel.</p></div>
+    <div class="bar" style="justify-content:flex-end"><button type="button" class="primary" id="jX">Schließen</button></div>`);
+  m.querySelector("#jX").onclick=closeModal;
+}
+$("#showJoin").onclick=joinSheet;$("#showJoin2").onclick=joinSheet;
+$("#printSlips").onclick=()=>{
+  const c=cls();if(!c.students.length){toast("Noch niemand in der Liste.");return}
+  $("#printArea").innerHTML=sortStu(c.students).map(s=>`<div class="slip">${qrSvg(joinLink(c.room,s.code),3)}<div><div class="n">${esc(nm(s))}</div><div style="font-size:9pt">${esc(c.name)}</div><div class="c">${s.code}</div><div class="i">QR-Code mit dem Gerät scannen. Oder ${esc(studentUrl())} öffnen, Klassencode <b>${c.room}</b> und deinen Code eingeben. Code nicht weitergeben.</div></div></div>`).join("");
+  setTimeout(()=>window.print(),50);
+};
+$("#newRoom").onclick=async()=>{
+  const c=cls();if(!await ask("Neuen Klassencode erzeugen? Alle Geräte müssen danach neu eingerichtet werden, und du brauchst neue Zettel.","Neu erzeugen"))return;
+  if(live&&live.cid===c.id)endRound(true);
+  c.room=SOMI.randCode(6);save();disconnect();await connect(c);rClass();toast("Neuer Klassencode: "+c.room);
+};
+
+/* ---------- Ansichten ---------- */
+function render(){if(!S)return;if(view==="home")rHome();if(view==="class")rClass();if(view==="session")rSession()}
+function rHome(){
+  $("#studentUrl").value=studentUrl();
+  const L=$("#classList");
+  if(!S.classes.length){L.innerHTML=`<div class="empty"><p>Noch keine Klasse und kein Kurs angelegt. Lege links eine neue Liste an oder probiere die App mit erfundenen Namen aus.</p><button type="button" id="demo">Beispielklasse anlegen</button></div>`;
+    $("#demo").onclick=()=>{const names=[["Albers","Mia"],["Brandt","Jonas"],["Celik","Elif"],["Dorn","Paul"],["Erdem","Lina"],["Fischer","Noah"],["Görgen","Emma"],["Hahn","Ben"]];
+      const c={id:uid(),name:"Beispiel 7x (erfundene Namen)",type:"sek1",room:SOMI.randCode(6),students:[],sessions:[],entries:[],raises:[],created:today()};
+      names.forEach(([l,f])=>c.students.push({id:uid(),last:l,first:f,code:newCode(c)}));S.classes.push(c);save();rHome()};return}
+  L.innerHTML=S.classes.map(c=>`<button class="row" data-c="${c.id}" type="button"><div class="grow"><div class="t">${esc(c.name)}</div><div class="muted small">${c.students.length} Personen · ${c.sessions.length} Sitzungen · ${c.raises.length} Meldungen · ${c.entries.length} Noten</div></div><span class="pill">${c.type==="sek2"?"Kurs · 0–15 P.":"Klasse · 1–6"}</span></button>`).join("");
+  L.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{curC=b.dataset.c;show("class")});
+}
+function rClass(){
+  const c=cls();if(!c)return show("home");
+  connect(c);
+  $("#cName").textContent=c.name;$("#cType").textContent=c.type==="sek2"?"Oberstufenkurs · Punkte 0–15":"Klasse · Noten 1–6";
+  $("#cRoom").textContent=c.room;
+  const t=today(), ex=c.sessions.find(s=>s.date===t);
+  $("#newSession").textContent=ex?`Heutige Sitzung öffnen`:`Neue Sitzung · ${fmtDate(t)}`;
+  const SL=$("#sessList"), ss=[...c.sessions].sort((a,b)=>b.date.localeCompare(a.date));
+  SL.innerHTML=ss.length?ss.map(s=>{const n=c.entries.filter(e=>e.ses===s.id).length,mr=c.raises.filter(r=>r.ses===s.id).length;return `<div class="row" style="cursor:default"><button class="ghost grow" style="justify-content:flex-start;text-align:left;padding:0;color:var(--ink)" data-s="${s.id}" type="button"><span><span class="t">${fmtDate(s.date)}</span><br><span class="muted small" style="font-weight:400">${plural(mr,"Meldung","Meldungen")} · ${plural(n,"Note","Noten")}</span></span></button><button class="ghost danger" data-del="${s.id}" type="button" aria-label="Sitzung löschen">Löschen</button></div>`}).join(""):`<div class="empty"><p>Noch keine Sitzung. Starte oben die heutige Stunde.</p></div>`;
+  SL.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{curS=b.dataset.s;show("session")});
+  SL.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{const id=b.dataset.del,n=c.entries.filter(e=>e.ses===id).length;if(!await ask(`Sitzung mit ${plural(n,"Note","Noten")} und allen Meldungen löschen?`))return;c.sessions=c.sessions.filter(s=>s.id!==id);c.entries=c.entries.filter(e=>e.ses!==id);c.raises=c.raises.filter(r=>r.ses!==id);save();rClass()});
+  $("#sortBy").value=sortBy;
+  const nSes=Math.max(1,c.sessions.length);
+  const stat=s=>{const rs=raisesOf(c,s.id),pk=rs.filter(r=>r.picked).length;return {n:rs.length,pk,passed:rs.length-pk}};
+  let list=sortStu(c.students);
+  if(sortBy==="raise")list.sort((x,y)=>stat(y).n-stat(x).n);
+  if(sortBy==="passed")list.sort((x,y)=>stat(y).passed-stat(x).passed);
+  if(sortBy==="avg"){const k=s=>{const a=avgOf(c,s.id);return a==null?Infinity:(c.type==="sek2"?-a:a)};list.sort((x,y)=>k(x)-k(y))}
+  const TB=$("#stuTable");
+  TB.innerHTML=list.map(s=>{const st=stat(s),a=avgOf(c,s.id),n=c.entries.filter(e=>e.s===s.id).length;return `<tr><td><span class="code">${s.code}</span><br><button class="ghost" style="min-height:30px;padding:0;font-size:13px" data-nc="${s.id}" type="button">neu</button></td><td><button type="button" class="link" data-hist="${s.id}">${esc(s.last)}, ${esc(s.first)}</button></td><td class="mono">${st.n}<br><small class="muted">Ø ${fmtNum(st.n/nSes)} / Sitzung</small></td><td class="mono">${st.pk}</td><td class="mono">${st.passed}</td><td class="mono">${n}</td><td class="avg">${avgText(c,a)}</td><td><button class="ghost danger" data-rm="${s.id}" type="button" aria-label="${esc(nm(s))} entfernen">✕</button></td></tr>`}).join("")||`<tr><td colspan="8" class="muted">Noch niemand eingetragen.</td></tr>`;
+  TB.querySelectorAll("[data-hist]").forEach(b=>b.onclick=()=>histSheet(b.dataset.hist));
+  TB.querySelectorAll("[data-nc]").forEach(b=>b.onclick=async()=>{const s=stuOf(c,b.dataset.nc);if(!await ask(`Neuen Code für ${nm(s)} erzeugen? Der alte Code funktioniert danach nicht mehr.`,"Neu erzeugen"))return;s.code=newCode(c);save();await refreshIds(c);rClass();toast(`${nm(s)} hat jetzt den Code ${s.code}`)});
+  TB.querySelectorAll("[data-rm]").forEach(b=>b.onclick=async()=>{const s=stuOf(c,b.dataset.rm);if(!await ask(`${nm(s)} mit allen Noten und Meldungen entfernen?`,"Entfernen"))return;c.students=c.students.filter(x=>x.id!==s.id);c.entries=c.entries.filter(e=>e.s!==s.id);c.raises=c.raises.filter(r=>r.s!==s.id);save();await refreshIds(c);rClass()});
+  statusUI();
+}
+$("#sortBy").onchange=e=>{sortBy=e.target.value;rClass()};
+function histSheet(sid){
+  const c=cls(),s=stuOf(c,sid),ss=[...c.sessions].sort((a,b)=>b.date.localeCompare(a.date));
+  const rs=raisesOf(c,sid),pk=rs.filter(r=>r.picked).length;
+  const rows=ss.map(x=>{const r=raisesOf(c,sid,x.id),g=c.entries.filter(e=>e.s===sid&&e.ses===x.id),p=r.filter(q=>q.picked).length;
+    return `<tr><td>${fmtDate(x.date)}</td><td class="mono">${r.length}${r.length?`<br><small class="muted">${r.map(q=>fmtTime(q.t)+(q.picked?" ✓":"")).join(", ")}</small>`:""}</td><td class="mono">${p}</td><td class="mono">${r.length-p}</td><td><div class="chips">${g.map(e=>`<span class="chip">${label(c,e.v)}</span>`).join("")||'<span class="muted">–</span>'}</div></td></tr>`}).join("");
+  const m=modal(`<div class="bar"><h2 class="grow">${esc(nm(s))}</h2><span class="avg">${avgText(c,avgOf(c,sid))}</span></div>
+    <p>${plural(rs.length,"Meldung","Meldungen")} in ${plural(c.sessions.length,"Sitzung","Sitzungen")}: ${pk}× drangekommen, ${rs.length-pk}× übergangen, ${plural(c.entries.filter(e=>e.s===sid).length,"Note","Noten")}.</p>
+    <div class="tablewrap"><table><thead><tr><th>Sitzung</th><th>Meldungen</th><th>Dran</th><th>Übergangen</th><th>Noten</th></tr></thead><tbody>${rows||'<tr><td colspan="5" class="muted">Noch keine Sitzung.</td></tr>'}</tbody></table></div>
+    <p class="muted small">✓ = an dieser Stelle drangekommen</p>
+    <div class="bar" style="justify-content:flex-end"><button type="button" class="primary" id="hX">Schließen</button></div>`);
+  m.querySelector("#hX").onclick=closeModal;
+}
+$("#addStu").onclick=async()=>{const c=cls(),l=$("#addLast").value.trim(),f=$("#addFirst").value.trim();if(!l&&!f)return;const s={id:uid(),last:l,first:f,code:newCode(c)};c.students.push(s);$("#addLast").value="";$("#addFirst").value="";save();await refreshIds(c);rClass();toast(`${f} ${l} hat den Code ${s.code}`)};
+$("#delClass").onclick=async()=>{const c=cls();if(!await ask(`„${c.name}“ mit allen Sitzungen, Meldungen und Noten löschen?`))return;if(live&&live.cid===c.id)endRound(true);S.classes=S.classes.filter(x=>x.id!==c.id);save();show("home")};
+$("#newSession").onclick=()=>{const c=cls(),t=today();let s=c.sessions.find(x=>x.date===t);if(!s){s={id:uid(),date:t};c.sessions.push(s);save()}curS=s.id;show("session")};
+document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>show(b.dataset.go));
+$("#backToClass").onclick=async()=>{if(live&&live.open){if(!await ask("Die Meldephase läuft noch. Beenden und zurück?","Beenden"))return;endRound(true)}show("class")};
+$("#exportCsv").onclick=()=>{
+  const c=cls(),ss=[...c.sessions].sort((a,b)=>a.date.localeCompare(b.date));
+  const head=["Nachname","Vorname","Meldungen","drangekommen","übergangen","Noten","Schnitt","Tendenz",...ss.flatMap(s=>[s.date+" Noten",s.date+" Meldungen"])];
+  const q=v=>/[;"\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:v;
+  const lines=[head.join(";")];
+  for(const s of sortStu(c.students)){const a=avgOf(c,s.id),rs=raisesOf(c,s.id),pk=rs.filter(r=>r.picked).length;
+    lines.push([s.last,s.first,rs.length,pk,rs.length-pk,c.entries.filter(e=>e.s===s.id).length,a==null?"":fmtNum(a,2),a==null?"":label(c,a),...ss.flatMap(x=>[c.entries.filter(e=>e.s===s.id&&e.ses===x.id).map(e=>label(c,e.v)).join(" "),raisesOf(c,s.id,x.id).length])].map(q).join(";"))}
+  offerFile(`SoMi-${c.name.replace(/[^\wäöüÄÖÜß-]+/g,"_")}-${today()}.csv`,"﻿"+lines.join("\r\n"),"text/csv");
+};
+
+function rSession(){
+  const c=cls(),ses=c&&c.sessions.find(s=>s.id===curS);if(!ses)return show("class");
+  connect(c);
+  // Nach Neuladen: offene Meldephase wiederherstellen
+  if(!live&&c.live&&c.live.ses===ses.id){live={cid:c.id,ses:ses.id,round:c.live.round,open:true,since:c.live.since,raised:new Map(c.live.raised)};clearInterval(beatT);beatT=setInterval(publishState,60000);publishState()}
+  $("#hideNames").checked=!!S.hideNames;
+  $("#sClass").textContent=c.name;$("#sDate").textContent=fmtDate(ses.date);
+  const n=c.entries.filter(e=>e.ses===ses.id).length,mr=c.raises.filter(r=>r.ses===ses.id),rounds=new Set(mr.map(r=>r.r)).size,people=new Set(mr.map(r=>r.s)).size;
+  $("#sStats").textContent=`${plural(rounds,"Meldephase","Meldephasen")} · ${plural(mr.length,"Meldung","Meldungen")} von ${plural(people,"Person","Personen")} · ${plural(n,"Note","Noten")}`;
+  const on=!!(live&&live.open&&live.cid===c.id&&live.ses===ses.id);
+  $("#livePanel").hidden=!on;$("#openBtn").hidden=on;
+  if(on){const k=live.raised.size;$("#liveCount").textContent=k;$("#liveLabel").textContent=k===1?"Meldung":"Meldungen";$("#liveSince").textContent="seit "+fmtTime(live.since);
+    $("#liveNames").innerHTML=S.hideNames?"":[...live.raised.keys()].map(sid=>stuOf(c,sid)).filter(Boolean).map(s=>`<span class="chip">${esc(nm(s))}</span>`).join("")}
+  const G=$("#stuGrid");
+  if(!c.students.length){G.innerHTML=`<div class="empty">In dieser Klasse ist noch niemand eingetragen.</div>`;statusUI();return}
+  G.innerHTML=sortStu(c.students).map(s=>{const a=avgOf(c,s.id),todays=c.entries.filter(e=>e.s===s.id&&e.ses===ses.id),rt=raisesOf(c,s.id,ses.id),pk=rt.filter(r=>r.picked).length,all=raisesOf(c,s.id),up=on&&live.raised.has(s.id);
+    return `<button class="stu${up&&!S.hideNames?" raised":""}" data-st="${s.id}" type="button"><div class="top"><span class="name">${esc(s.last)}, ${esc(s.first)}</span><span class="avg">${avgText(c,a)}</span></div><div class="meter"><i style="width:${meterPct(c,a)}%"></i></div><div class="meta"><span>heute <b>${rt.length}</b> gemeldet · <b>${pk}</b> dran</span><span>gesamt <b>${all.length}</b> · übergangen <b>${all.length-all.filter(r=>r.picked).length}</b></span></div><div class="chips">${todays.length?todays.map(e=>`<span class="chip">${label(c,e.v)}</span>`).join(""):'<span class="muted" style="font-size:13px">heute noch keine Note</span>'}</div></button>`}).join("");
+  G.querySelectorAll("[data-st]").forEach(b=>b.onclick=()=>gradeSheet(b.dataset.st));
+  statusUI();
+}
+
+$("#overlay").addEventListener("click",e=>{if(e.target.id==="overlay")closeModal()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("#overlay").hidden)closeModal()});
+setupLock();show("lock");
+})();
+</script>
+</body>
+</html>
